@@ -2,7 +2,9 @@
 
 用于 AI 产品经理 Coding 作业的运营后台原型，覆盖活动效果、生成表现、内容审核及设备状态。
 
-## 当前进度：第七步 / 异常列表、详情与证据追查
+## 当前进度：第八步 / 提交材料与最终交付
+
+提交入口见 [提交说明](docs/SUBMISSION.md)。已包含 [一页指标说明](output/pdf/01-metrics-one-page.pdf)、[AI工具使用说明](output/pdf/02-ai-tool-usage.pdf)、[三分钟演示路径](docs/DEMO_GUIDE.md) 和 [验收记录](docs/VALIDATION.md)。两份PDF均保留可编辑内容，完整源码与模拟数据可打包交付。
 
 已将可复现JSON明细通过独立指标模块接入React页面，展示四张指标卡、参与人数和生成成功率趋势、点位比较、内容审核、设备状态及设备明细。
 
@@ -106,10 +108,15 @@ tests/exceptions.test.mjs  规则、样本门槛与证据关联测试
 vercel.json               部署配置
 ```
 
-## 后续模块
+## 提交包制作
 
-1. 制作一页指标说明。
-2. 补充最终验收、演示材料和提交包。
+使用Python 3标准库脚本打包，无需额外Python包。先确保代码和交付文件已提交，工作区干净，并执行 `npm run build`：
+
+```sh
+python3 scripts/package-submission.py
+```
+
+会生成 `artifacts/submission/ScreenPulse-submission-draft.zip`。在独立目录解压并完成安装、测试、构建及静态预览后，将含Git提交SHA和PASS结果的验收报告传给 `--verification`，生成正式的 `ScreenPulse-submission.zip` 与对应SHA-256文件。压缩包包含源代码、模拟数据、PDF、预构建网页、运行说明与演示材料；排除依赖目录、Git历史和本机配置，并检查30MB上限。
 
 业务数据统一按北京时间的体验开始日归属。设备状态显示独立快照时间并仅随点位筛选。所有点位为虚构演示配置。
 
