@@ -13,7 +13,10 @@
     "preview": "vite preview --host 127.0.0.1",
     "data:generate": "node scripts/generate-mock-data.mjs",
     "data:validate": "node scripts/validate-mock-data.mjs",
-    "test:data": "node --test tests/mock-data.test.mjs"
+    "test:data": "node --test tests/mock-data.test.mjs",
+    "test:metrics": "node --test tests/metrics.test.mjs",
+    "metrics:check": "node scripts/check-metrics.mjs",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "echarts": "6.1.0",
