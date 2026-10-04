@@ -1,6 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { MetricDataset } from "../types/mock-data";
-import type { MetricFilter } from "../lib/metrics";
+import { useEffect, useRef, useState } from "react";
 import type { ExceptionItem } from "../lib/exceptions";
 import {
   metricLabels,
@@ -12,34 +10,23 @@ import {
   moderationLabels,
   codeLabels,
 } from "../lib/exception-display";
-import { useExceptions } from "../hooks/useExceptions";
+import type { useExceptions } from "../hooks/useExceptions";
 import { formatSnapshot } from "./DeviceList";
 import { formatCount, formatSeconds } from "../lib/metric-format";
 
 export default function ExceptionCenter({
-  dataset,
-  filter,
-  onLocate,
+  exceptions,
+  onSelect,
 }: {
-  dataset: MetricDataset;
-  filter: MetricFilter;
-  onLocate: (item: ExceptionItem) => void;
+  exceptions: ReturnType<typeof useExceptions>;
+  onSelect: (id: string) => void;
 }) {
-  const { resource, retry } = useExceptions(dataset);
+  const { resource, retry, report } = exceptions;
   const [kind, setKind] = useState("all");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const report = useMemo(
-    () =>
-      resource.status === "ready" ? resource.engine.evaluate(filter) : null,
-    [resource, filter],
-  );
   const items =
     report?.items.filter(
       (item) => kind === "all" || item.scenario.kind === kind,
     ) ?? [];
-  const selected = report?.items.find(
-    (item) => item.scenario.scenario_id === selectedId,
-  );
   const anomalies =
     report?.items.filter((item) => item.scenario.kind === "anomaly").length ??
     0;
@@ -155,9 +142,7 @@ export default function ExceptionCenter({
                         <button
                           className="text-button"
                           aria-label={`查看${item.scenario.title}详情`}
-                          onClick={() =>
-                            setSelectedId(item.scenario.scenario_id)
-                          }
+                          onClick={() => onSelect(item.scenario.scenario_id)}
                         >
                           查看详情 →
                         </button>
@@ -186,22 +171,11 @@ export default function ExceptionCenter({
           </p>
         </>
       )}
-      {selected && (
-        <ExceptionDialog
-          key={selected.scenario.scenario_id}
-          item={selected}
-          onClose={() => setSelectedId(null)}
-          onLocate={() => {
-            setSelectedId(null);
-            onLocate(selected);
-          }}
-        />
-      )}
     </section>
   );
 }
 
-function ExceptionDialog({
+export function ExceptionDialog({
   item,
   onClose,
   onLocate,

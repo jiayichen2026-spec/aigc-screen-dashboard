@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { MetricDataset } from "../types/mock-data";
+import type { MetricFilter } from "../lib/metrics";
 import { loadExceptions } from "../lib/load-exceptions";
 
 type Resource =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "ready"; engine: Awaited<ReturnType<typeof loadExceptions>> };
-export function useExceptions(dataset: MetricDataset) {
+export function useExceptions(
+  dataset: MetricDataset | null,
+  filter: MetricFilter | null,
+) {
   const [resource, setResource] = useState<Resource>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    if (!dataset) return;
     const controller = new AbortController();
     let active = true;
     const timer = window.setTimeout(
@@ -37,8 +42,16 @@ export function useExceptions(dataset: MetricDataset) {
       controller.abort();
     };
   }, [dataset, attempt]);
+  const report = useMemo(
+    () =>
+      dataset && filter && resource.status === "ready"
+        ? resource.engine.evaluate(filter)
+        : null,
+    [dataset, filter, resource],
+  );
   return {
     resource,
+    report,
     retry: () => {
       setResource({ status: "loading" });
       setAttempt((n) => n + 1);

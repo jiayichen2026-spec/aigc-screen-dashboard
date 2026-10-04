@@ -1369,3 +1369,96 @@ td {
     padding-right: 17px;
   }
 }
+.priority-focus {
+  margin-bottom: 20px;
+}
+.priority-focus .panel-heading {
+  padding: 16px 20px 0;
+}
+.focus-explanation,
+.focus-state {
+  margin: 10px 20px 14px;
+  color: #596e61;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.focus-state .button {
+  margin-top: 10px;
+}
+.focus-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0 20px;
+  margin: 0;
+}
+.focus-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-top: 3px solid #ccaa7d;
+  border-radius: 7px;
+  background: #fafcf9;
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.focus-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 13px;
+}
+.focus-card .text-button {
+  min-height: 36px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.focus-window,
+.focus-rule {
+  color: #596e61;
+}
+.focus-observed {
+  margin-top: 9px;
+}
+.focus-observed strong {
+  color: #946131;
+  font-size: 18px;
+  white-space: nowrap;
+}
+.focus-impact,
+.focus-action {
+  margin-top: 8px;
+}
+.focus-action {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.focus-footnote {
+  margin-bottom: 16px;
+}
+@media (max-width: 1150px) {
+  .focus-list {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 580px) {
+  .priority-focus .panel-heading {
+    padding: 14px 14px 0;
+    flex-wrap: wrap;
+  }
+  .focus-list {
+    padding: 0 14px;
+  }
+  .focus-explanation,
+  .focus-state {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+  .focus-card .text-button {
+    min-height: 44px;
+  }
+}

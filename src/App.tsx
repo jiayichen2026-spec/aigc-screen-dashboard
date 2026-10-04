@@ -5,7 +5,10 @@ import { locations, metricDefinitions } from "./data/catalog";
 import { useDashboardData } from "./hooks/useDashboardData";
 import { formatCount, formatPercent, formatSeconds } from "./lib/metric-format";
 import DeviceList, { formatSnapshot } from "./components/DeviceList";
-import ExceptionCenter from "./components/ExceptionCenter";
+import ExceptionCenter, { ExceptionDialog } from "./components/ExceptionCenter";
+import PriorityFocus from "./components/PriorityFocus";
+import { useExceptions } from "./hooks/useExceptions";
+import type { ExceptionItem } from "./lib/exceptions";
 
 const navigation = [
   { id: "overview", label: "运营概览", icon: "overview" },
@@ -41,6 +44,16 @@ export default function App() {
         : data.engine.defaultFilter(Number(period === "custom" ? "7" : period));
     return data.engine.calculate({ ...range, locationId: location });
   }, [data, period, customRange, location]);
+  const exceptions = useExceptions(
+    data?.dataset ?? null,
+    result?.filter ?? null,
+  );
+  const [selectedExceptionId, setSelectedExceptionId] = useState<string | null>(
+    null,
+  );
+  const selectedException = exceptions.report?.items.find(
+    (item) => item.scenario.scenario_id === selectedExceptionId,
+  );
   const metrics = result?.metrics ?? null;
   const unavailableText =
     resource.status === "error" ? "数据加载失败，请重试" : "正在读取模拟数据…";
@@ -77,6 +90,22 @@ export default function App() {
     } catch (error) {
       setFilterError(error instanceof Error ? error.message : "日期范围无效");
     }
+  };
+
+  const locateException = (item: ExceptionItem) => {
+    setLocation(item.filter.locationId);
+    if (item.scope === "business") {
+      setPeriod("custom");
+      setCustomRange({
+        startDate: item.filter.startDate,
+        endDate: item.filter.endDate,
+      });
+      setDraftStart(item.filter.startDate);
+      setDraftEnd(item.filter.endDate);
+    }
+    setFilterError("");
+    setActiveSection("overview");
+    document.getElementById("overview")?.scrollIntoView();
   };
 
   return (
@@ -328,6 +357,15 @@ export default function App() {
                 )}
               </div>
             )}
+            <PriorityFocus
+              exceptions={exceptions}
+              result={result}
+              unavailableText={unavailableText}
+              heartbeatThresholdSeconds={
+                data?.metadata.online_threshold_seconds ?? null
+              }
+              onSelect={setSelectedExceptionId}
+            />
             <div className="metrics">
               {metricDefinitions.slice(0, 4).map((metric, index) => (
                 <article className="metric-card" key={metric.name}>
@@ -504,23 +542,8 @@ export default function App() {
           </div>
           {data && result ? (
             <ExceptionCenter
-              dataset={data.dataset}
-              filter={result.filter}
-              onLocate={(item) => {
-                setLocation(item.filter.locationId);
-                if (item.scope === "business") {
-                  setPeriod("custom");
-                  setCustomRange({
-                    startDate: item.filter.startDate,
-                    endDate: item.filter.endDate,
-                  });
-                  setDraftStart(item.filter.startDate);
-                  setDraftEnd(item.filter.endDate);
-                }
-                setFilterError("");
-                setActiveSection("overview");
-                document.getElementById("overview")?.scrollIntoView();
-              }}
+              exceptions={exceptions}
+              onSelect={setSelectedExceptionId}
             />
           ) : (
             <section id="exceptions" className="panel">
@@ -538,6 +561,17 @@ export default function App() {
           </footer>
         </main>
       </div>
+      {selectedException && (
+        <ExceptionDialog
+          key={selectedException.scenario.scenario_id}
+          item={selectedException}
+          onClose={() => setSelectedExceptionId(null)}
+          onLocate={() => {
+            setSelectedExceptionId(null);
+            locateException(selectedException);
+          }}
+        />
+      )}
       <dialog
         ref={definitions}
         className="definitions"
