@@ -1,7 +1,10 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Icon from "./components/Icon";
 import TrendChart from "./components/TrendChart";
 import { locations, metricDefinitions } from "./data/catalog";
+import { useDashboardData } from "./hooks/useDashboardData";
+import { formatCount, formatPercent, formatSeconds } from "./lib/metric-format";
+import DeviceList, { formatSnapshot } from "./components/DeviceList";
 
 const navigation = [
   { id: "overview", label: "运营概览", icon: "overview" },
@@ -11,11 +14,69 @@ const navigation = [
 ] as const;
 
 export default function App() {
+  const { resource, retry } = useDashboardData();
+  const data = resource.status === "ready" ? resource.data : null;
+  const [customRange, setCustomRange] = useState<{
+    startDate: string;
+    endDate: string;
+  } | null>(null);
+  const [draftStart, setDraftStart] = useState("");
+  const [draftEnd, setDraftEnd] = useState("");
+  const [filterError, setFilterError] = useState("");
   const [location, setLocation] = useState("all");
   const [period, setPeriod] = useState("7");
   const [activeSection, setActiveSection] = useState("overview");
   const definitions = useRef<HTMLDialogElement>(null);
-  const locationName = locations.find((item) => item.id === location)!.name;
+  const siteOptions = data
+    ? [{ id: "all", name: "全部点位" }, ...data.metadata.locations]
+    : locations;
+  const locationName =
+    siteOptions.find((item) => item.id === location)?.name ?? "全部点位";
+  const result = useMemo(() => {
+    if (!data) return null;
+    const range =
+      period === "custom" && customRange
+        ? customRange
+        : data.engine.defaultFilter(Number(period === "custom" ? "7" : period));
+    return data.engine.calculate({ ...range, locationId: location });
+  }, [data, period, customRange, location]);
+  const metrics = result?.metrics ?? null;
+  const unavailableText =
+    resource.status === "error" ? "数据加载失败，请重试" : "正在读取模拟数据…";
+  const values = [
+    formatCount(metrics?.participants ?? null),
+    formatPercent(metrics?.generation.successRate ?? null),
+    formatPercent(metrics?.conversion.rate ?? null),
+    formatSeconds(metrics?.generation.averageSeconds ?? null),
+  ];
+  const evidence = metrics
+    ? [
+        `${formatCount(metrics.sessions)}次体验 · 范围内重新去重`,
+        `${formatCount(metrics.generation.succeeded)}成功 / ${formatCount(metrics.generation.ended)}已结束`,
+        `${formatCount(metrics.conversion.scannedSessions)}扫码 / ${formatCount(metrics.conversion.eligibleSessions)}可领取`,
+        `${formatCount(metrics.generation.succeeded)}个成功任务 · 包含排队`,
+      ]
+    : Array(4).fill(result ? "所选日期没有数据覆盖" : unavailableText);
+  const reset = () => {
+    setLocation("all");
+    setPeriod("7");
+    setCustomRange(null);
+    setFilterError("");
+  };
+  const applyDates = () => {
+    if (!data) return;
+    try {
+      data.engine.calculate({
+        startDate: draftStart,
+        endDate: draftEnd,
+        locationId: location,
+      });
+      setCustomRange({ startDate: draftStart, endDate: draftEnd });
+      setFilterError("");
+    } catch (error) {
+      setFilterError(error instanceof Error ? error.message : "日期范围无效");
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -64,7 +125,7 @@ export default function App() {
             连接体验与运营决策
           </p>
           <div className="sidebar-version">
-            基础原型 <span>v0.1</span>
+            数据演示 <span>v0.2</span>
           </div>
         </div>
       </aside>
@@ -84,7 +145,7 @@ export default function App() {
             </span>
           </div>
         </header>
-        <main id="main">
+        <main id="main" aria-busy={resource.status === "loading"}>
           <section id="overview" className="overview">
             <div className="page-heading">
               <div>
@@ -102,17 +163,36 @@ export default function App() {
                 指标口径
               </button>
             </div>
-            <div className="notice">
+            <div
+              className={`notice ${resource.status === "error" ? "notice-error" : ""}`}
+              role={resource.status === "error" ? "alert" : "status"}
+            >
               <span className="notice-icon">
                 <Icon name="info" />
               </span>
               <div>
-                <strong>基础页面已就绪，模拟数据待接入</strong>
+                <strong>
+                  {data
+                    ? `模拟数据已接入 · 截至 ${formatSnapshot(data.metadata.snapshot_at)}（北京时间）`
+                    : unavailableText}
+                </strong>
                 <p>
-                  当前数值“—”表示暂无数据，不代表业务表现为零。点位名称为虚构演示配置。
+                  {resource.status === "error"
+                    ? `${resource.message}。未使用0代替读取失败的数据。`
+                    : data
+                      ? "所有点位与用户均为虚构。最近7天／30天以数据快照为准，快照当日仅统计至上述截止时刻。"
+                      : "正在加载体验、生成任务和设备快照，请稍候。"}
                 </p>
               </div>
-              <span className="notice-tag">初始化版本</span>
+              {resource.status === "error" ? (
+                <button className="button secondary" onClick={retry}>
+                  重新加载
+                </button>
+              ) : (
+                <span className="notice-tag">
+                  {data ? "可复现模拟数据" : "加载中"}
+                </span>
+              )}
             </div>
             <div className="filter-bar">
               <div className="filters">
@@ -120,43 +200,133 @@ export default function App() {
                   统计周期
                   <select
                     value={period}
-                    onChange={(event) => setPeriod(event.target.value)}
+                    disabled={!data}
+                    onChange={(event) => {
+                      const next = event.target.value;
+                      if (next === "custom" && result) {
+                        setCustomRange({
+                          startDate: result.filter.startDate,
+                          endDate: result.filter.endDate,
+                        });
+                        setDraftStart(result.filter.startDate);
+                        setDraftEnd(result.filter.endDate);
+                      }
+                      setPeriod(next);
+                      setFilterError("");
+                    }}
                   >
                     <option value="7">最近 7 天</option>
                     <option value="30">最近 30 天</option>
+                    <option value="custom">自定义日期</option>
                   </select>
                 </label>
                 <label>
                   活动点位
                   <select
                     value={location}
+                    disabled={!data}
                     onChange={(event) => setLocation(event.target.value)}
                   >
-                    {locations.map((item) => (
+                    {siteOptions.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name}
                       </option>
                     ))}
                   </select>
                 </label>
-                <button
-                  className="reset"
-                  onClick={() => {
-                    setLocation("all");
-                    setPeriod("7");
-                  }}
-                >
+                <button className="reset" onClick={reset}>
                   重置
                 </button>
               </div>
               <span className="timezone">北京时间 · UTC+8</span>
             </div>
+            {period === "custom" && (
+              <form
+                className="custom-dates"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  applyDates();
+                }}
+              >
+                <label>
+                  开始日期
+                  <input
+                    type="date"
+                    required
+                    value={draftStart}
+                    onChange={(event) => setDraftStart(event.target.value)}
+                  />
+                </label>
+                <label>
+                  结束日期
+                  <input
+                    type="date"
+                    required
+                    value={draftEnd}
+                    onChange={(event) => setDraftEnd(event.target.value)}
+                  />
+                </label>
+                <button
+                  className="button secondary"
+                  type="submit"
+                  disabled={!data}
+                >
+                  应用日期
+                </button>
+                <p>选择后点击应用，最多366天</p>
+              </form>
+            )}
+            {filterError && (
+              <p className="filter-error" role="alert">
+                {filterError}。当前仍显示上次有效范围。
+              </p>
+            )}
             <p className="filter-summary" aria-live="polite">
               <Icon name="location" />
               {locationName}
-              <span>·</span>最近 {period} 天<span>·</span>
-              日期范围将在数据接入后确定
+              <span>·</span>
+              {period === "custom" ? "自定义日期" : `最近 ${period} 天`}
+              <span>·</span>
+              {result
+                ? `${result.filter.startDate} 至 ${result.filter.endDate}`
+                : "正在读取日期范围"}
             </p>
+            {result && (
+              <div className="coverage-notes" aria-live="polite">
+                {result.coverage.dateRange !== "within" && (
+                  <p>
+                    所选日期
+                    {result.coverage.dateRange === "outside"
+                      ? "没有"
+                      : "仅部分有"}
+                    数据覆盖；可用范围为 {result.coverage.availableStartDate} 至{" "}
+                    {result.coverage.availableEndDate}，未覆盖日期不计为0。
+                  </p>
+                )}
+                {result.coverage.incompleteDates.length > 0 && (
+                  <p>
+                    {result.coverage.incompleteDates.join("、")}{" "}
+                    尚未结束，统计截至{" "}
+                    {formatSnapshot(result.coverage.observedThrough).slice(
+                      11,
+                      16,
+                    )}
+                    ，请勿直接与完整自然日比较。
+                  </p>
+                )}
+                {metrics && metrics.sessions === 0 && (
+                  <p>
+                    所选范围暂无体验记录。比例和平均时长显示“—”；设备仍展示独立快照。
+                  </p>
+                )}
+                {metrics && metrics.sessions > 0 && metrics.sessions < 30 && (
+                  <p>
+                    样本量较少（{metrics.sessions}
+                    次体验），比例仅供观察，请谨慎比较。
+                  </p>
+                )}
+              </div>
+            )}
             <div className="metrics">
               {metricDefinitions.slice(0, 4).map((metric, index) => (
                 <article className="metric-card" key={metric.name}>
@@ -165,7 +335,8 @@ export default function App() {
                     <span className="metric-index">0{index + 1}</span>
                   </div>
                   <div className="metric-value">
-                    —<span>{["人", "%", "%", "秒"][index]}</span>
+                    {values[index]}
+                    <span>{["人", "%", "%", "秒"][index]}</span>
                   </div>
                   <p>
                     {
@@ -177,10 +348,18 @@ export default function App() {
                       ][index]
                     }
                   </p>
-                  <span className="metric-status">数据待接入</span>
+                  <span className="metric-status">{evidence[index]}</span>
                 </article>
               ))}
             </div>
+            {metrics && (
+              <p className="generation-summary">
+                任务进度：{formatCount(metrics.generation.failed)}失败 ·{" "}
+                {formatCount(metrics.generation.queued)}排队 ·{" "}
+                {formatCount(metrics.generation.processing)}处理中
+                <span>未结束任务不计入成功率分母</span>
+              </p>
+            )}
             <div className="analytics-grid">
               <section className="panel trend-panel">
                 <div className="panel-heading">
@@ -188,12 +367,18 @@ export default function App() {
                     <h2>活动趋势</h2>
                     <p>观察参与规模与生成服务的变化</p>
                   </div>
-                  <span className="legend">
-                    <i />
-                    参与人数
-                  </span>
+                  <div className="chart-legends">
+                    <span className="legend">
+                      <i />
+                      参与人数
+                    </span>
+                    <span className="legend success-legend">
+                      <i />
+                      成功率
+                    </span>
+                  </div>
                 </div>
-                <TrendChart />
+                <TrendChart result={result} unavailableText={unavailableText} />
               </section>
               <section className="panel location-panel">
                 <div className="panel-heading">
@@ -206,27 +391,32 @@ export default function App() {
                   </span>
                 </div>
                 <div className="location-list">
-                  {locations
-                    .filter(
-                      (item) =>
-                        item.id !== "all" &&
-                        (location === "all" || location === item.id),
-                    )
-                    .map((item, index) => (
+                  {result ? (
+                    result.locations.map((item, index) => (
                       <div className="location-row" key={item.id}>
                         <span className="location-number">
                           {String(index + 1).padStart(2, "0")}
                         </span>
                         <div>
                           <strong>{item.name}</strong>
-                          <span>暂无体验记录</span>
+                          <span>
+                            {item.metrics
+                              ? `${formatCount(item.metrics.sessions)}次体验 · 成功率 ${formatPercent(item.metrics.generation.successRate)}%`
+                              : "所选日期未覆盖"}
+                          </span>
                         </div>
-                        <span className="location-value">—</span>
+                        <span className="location-value">
+                          {formatCount(item.metrics?.participants ?? null)}
+                          <small>人</small>
+                        </span>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <p className="section-placeholder">{unavailableText}</p>
+                  )}
                 </div>
                 <div className="panel-footnote">
-                  点位比较将使用相同的统计口径
+                  每个点位独立去重；各点位人数之和可能大于总览人数
                 </div>
               </section>
             </div>
@@ -249,17 +439,36 @@ export default function App() {
                       <i />
                       {text}
                     </span>
-                    <strong>—</strong>
+                    <strong>
+                      {formatCount(
+                        metrics
+                          ? [
+                              metrics.moderation.passed,
+                              metrics.moderation.blocked,
+                              metrics.moderation.pending,
+                            ][index]
+                          : null,
+                      )}
+                    </strong>
                   </div>
                 ))}
               </div>
-              <p className="panel-footnote">暂无审核记录 · 审核通过率 —</p>
+              <p className="panel-footnote">
+                审核通过率 {formatPercent(metrics?.moderation.passRate ?? null)}
+                % · 已审核 {formatCount(metrics?.moderation.reviewed ?? null)}{" "}
+                个结果；待审核不进入分母
+              </p>
             </section>
             <section id="devices" className="panel">
               <div className="panel-heading">
                 <div>
                   <h2>设备状态</h2>
-                  <p>仅跟随点位筛选 · 快照时间待接入</p>
+                  <p>
+                    仅跟随点位筛选 ·{" "}
+                    {result
+                      ? formatSnapshot(result.devices.asOf)
+                      : "快照加载中"}
+                  </p>
                 </div>
                 <span className="panel-icon">
                   <Icon name="screen" />
@@ -272,13 +481,24 @@ export default function App() {
                       <i />
                       {text}
                     </span>
-                    <strong>—</strong>
+                    <strong>
+                      {formatCount(
+                        result
+                          ? [
+                              result.devices.online,
+                              result.devices.offline,
+                              result.devices.unknown,
+                            ][index]
+                          : null,
+                      )}
+                    </strong>
                   </div>
                 ))}
               </div>
               <p className="panel-footnote">
-                暂无设备快照 · 当前点位：{locationName}
+                当前点位：{locationName} · 无心跳不等于离线
               </p>
+              {result && <DeviceList snapshot={result.devices} />}
             </section>
           </div>
           <section id="exceptions" className="panel exceptions">
@@ -287,7 +507,7 @@ export default function App() {
                 <h2>异常中心</h2>
                 <p>聚合生成、内容与设备异常，帮助确定排查顺序</p>
               </div>
-              <span className="neutral-badge">待接入异常记录</span>
+              <span className="neutral-badge">异常详情待开放</span>
             </div>
             <div className="table-scroll">
               <table>
@@ -311,9 +531,9 @@ export default function App() {
                     <td colSpan={5}>
                       <div className="table-empty">
                         <Icon name="activity" />
-                        <strong>暂无可展示的异常记录</strong>
+                        <strong>异常明细暂未开放</strong>
                         <span>
-                          模拟数据接入后，将支持查看异常现象和排查建议。
+                          当前可查看上方失败任务、审核及设备状态；详细追查与排查建议将在下一步接入。
                         </span>
                       </div>
                     </td>
@@ -324,7 +544,7 @@ export default function App() {
           </section>
           <footer className="footer">
             <span>ScreenPulse · AIGC 互动大屏运营看板</span>
-            <span>模拟演示 / 基础原型 v0.1</span>
+            <span>模拟演示 / 数据看板 v0.2</span>
           </footer>
         </main>
       </div>
@@ -351,7 +571,7 @@ export default function App() {
           </button>
         </div>
         <p className="dialog-intro">
-          当前为拟定口径；数值待模拟数据接入后计算。分母为零时显示“—”。
+          所有指标由模拟明细计算。分母为零或日期未覆盖时显示“—”，不代表0%。
         </p>
         <dl>
           {metricDefinitions.map((metric) => (
