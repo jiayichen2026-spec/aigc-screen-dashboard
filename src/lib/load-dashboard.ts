@@ -29,7 +29,11 @@ export async function loadDashboard(
   }
   const dataset: MetricDataset = { metadata, sessions, generations, devices };
   // Validate relationships and metric invariants before rendering any result.
-  return { metadata: dataset.metadata, engine: createMetricEngine(dataset) };
+  return {
+    metadata: dataset.metadata,
+    engine: createMetricEngine(dataset),
+    dataset,
+  };
 }
 
 export type DashboardData = Awaited<ReturnType<typeof loadDashboard>>;

@@ -5,6 +5,7 @@ import { locations, metricDefinitions } from "./data/catalog";
 import { useDashboardData } from "./hooks/useDashboardData";
 import { formatCount, formatPercent, formatSeconds } from "./lib/metric-format";
 import DeviceList, { formatSnapshot } from "./components/DeviceList";
+import ExceptionCenter from "./components/ExceptionCenter";
 
 const navigation = [
   { id: "overview", label: "运营概览", icon: "overview" },
@@ -125,7 +126,7 @@ export default function App() {
             连接体验与运营决策
           </p>
           <div className="sidebar-version">
-            数据演示 <span>v0.2</span>
+            数据演示 <span>v0.3</span>
           </div>
         </div>
       </aside>
@@ -501,50 +502,39 @@ export default function App() {
               {result && <DeviceList snapshot={result.devices} />}
             </section>
           </div>
-          <section id="exceptions" className="panel exceptions">
-            <div className="panel-heading">
-              <div>
+          {data && result ? (
+            <ExceptionCenter
+              dataset={data.dataset}
+              filter={result.filter}
+              onLocate={(item) => {
+                setLocation(item.filter.locationId);
+                if (item.scope === "business") {
+                  setPeriod("custom");
+                  setCustomRange({
+                    startDate: item.filter.startDate,
+                    endDate: item.filter.endDate,
+                  });
+                  setDraftStart(item.filter.startDate);
+                  setDraftEnd(item.filter.endDate);
+                }
+                setFilterError("");
+                setActiveSection("overview");
+                document.getElementById("overview")?.scrollIntoView();
+              }}
+            />
+          ) : (
+            <section id="exceptions" className="panel">
+              <div className="panel-heading">
                 <h2>异常中心</h2>
-                <p>聚合生成、内容与设备异常，帮助确定排查顺序</p>
               </div>
-              <span className="neutral-badge">异常详情待开放</span>
-            </div>
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    {[
-                      "发生时间",
-                      "活动点位",
-                      "异常类型",
-                      "影响范围",
-                      "详情",
-                    ].map((text) => (
-                      <th key={text} scope="col">
-                        {text}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colSpan={5}>
-                      <div className="table-empty">
-                        <Icon name="activity" />
-                        <strong>异常明细暂未开放</strong>
-                        <span>
-                          当前可查看上方失败任务、审核及设备状态；详细追查与排查建议将在下一步接入。
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+              <p className="section-placeholder exception-scope">
+                {unavailableText}；明细就绪后再进行异常判断。
+              </p>
+            </section>
+          )}
           <footer className="footer">
             <span>ScreenPulse · AIGC 互动大屏运营看板</span>
-            <span>模拟演示 / 数据看板 v0.2</span>
+            <span>模拟演示 / 数据看板 v0.3</span>
           </footer>
         </main>
       </div>

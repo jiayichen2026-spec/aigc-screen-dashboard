@@ -1168,3 +1168,204 @@ td {
     font-size: 30px;
   }
 }
+
+.exception-scope {
+  margin: 0 23px 18px;
+  color: #6c7c70;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.exception-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 23px 18px;
+}
+.exception-toolbar p {
+  font-size: 10px;
+  color: #718176;
+}
+.exception-table {
+  min-width: 900px;
+}
+.exception-table td {
+  padding: 15px 18px;
+  border-bottom: 1px solid #edf1eb;
+  vertical-align: top;
+}
+.exception-table small {
+  display: block;
+  margin-top: 5px;
+  color: #718176;
+  font-size: 10px;
+}
+.exception-table strong {
+  font-weight: 550;
+}
+.case-kind {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin: 0 6px 5px 0;
+  font-size: 9px;
+}
+.case-kind.anomaly {
+  background: #fff0e7;
+  color: #995630;
+}
+.case-kind.boundary {
+  background: #eef2f6;
+  color: #596d84;
+}
+.text-button {
+  background: transparent;
+  border: 0;
+  color: #20785a;
+  font-size: 11px;
+  padding: 4px 0;
+  white-space: nowrap;
+}
+.text-button:hover {
+  text-decoration: underline;
+}
+.exception-error {
+  padding: 0 23px 22px;
+  color: #9c4931;
+  font-size: 12px;
+}
+.exception-error button {
+  margin-top: 12px;
+}
+.exception-dialog {
+  width: min(880px, calc(100% - 30px));
+}
+.exception-dialog h2 {
+  font-size: 20px;
+}
+.exception-dialog h3 {
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+.exception-evidence {
+  background: #f2f6ef;
+  border: 1px solid #e4ebdf;
+  border-radius: 8px;
+  padding: 16px;
+}
+.exception-evidence > span {
+  font-size: 12px;
+}
+.exception-evidence > strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 550;
+  margin: 5px 0;
+}
+.exception-evidence p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #5a6e5e;
+}
+.investigation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.investigation-grid section {
+  border-left: 3px solid #ccddcd;
+  padding-left: 12px;
+}
+.investigation-grid p {
+  font-size: 12px;
+  color: #687f6c;
+  line-height: 1.9;
+}
+.record-evidence {
+  border-top: 1px solid #eaf0e7;
+  padding-top: 18px;
+}
+.record-evidence > p {
+  font-size: 11px;
+  color: #738775;
+}
+.record-evidence > ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.record-evidence > ul > li {
+  border-top: 1px solid #eaf0e7;
+}
+.record-evidence summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 0;
+}
+.record-evidence summary::before {
+  content: "+";
+  font-size: 16px;
+}
+.record-evidence details[open] > summary::before {
+  content: "−";
+}
+.record-evidence summary span:first-of-type {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.record-evidence summary small {
+  display: block;
+  font-size: 10px;
+  color: #7c8f80;
+  margin-top: 4px;
+}
+.record-body {
+  background: #f7f9f5;
+  padding: 12px;
+  font-size: 11px;
+  color: #607664;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+.record-body p + p {
+  margin-top: 7px;
+}
+.record-body ol {
+  padding-left: 18px;
+}
+.evidence-pagination,
+.exception-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.evidence-pagination span {
+  font-size: 11px;
+  color: #748775;
+}
+.exception-actions {
+  justify-content: flex-end;
+  border-top: 1px solid #eaf0e7;
+  padding-top: 18px;
+}
+@media (max-width: 580px) {
+  .investigation-grid {
+    grid-template-columns: 1fr;
+  }
+  .exception-dialog h2 {
+    font-size: 17px;
+  }
+  .exception-toolbar,
+  .exception-scope {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+}
