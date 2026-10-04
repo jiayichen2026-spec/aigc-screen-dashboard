@@ -1,0 +1,30 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "metadata.json",
+      "bytes": 957,
+      "sha256": "eb54ce8b1200c59f2fa0710af3d4a8b5be90b9a26b8c15299a543deb42404c13"
+    },
+    {
+      "path": "sessions.json",
+      "bytes": 887320,
+      "sha256": "0f041aa40a78fcdfe91f4bb165f3f029e087c108a6f72b85d0bd1ea5cdfa8b61"
+    },
+    {
+      "path": "generations.json",
+      "bytes": 2608183,
+      "sha256": "8c3896729f1e5fe28443e70849fd13664c0909b8089f39b20d9a77a6dc4db4da"
+    },
+    {
+      "path": "devices.json",
+      "bytes": 1327,
+      "sha256": "c583ef02d897f3db808d977ad583eb1a78f2ab17c2a38ddd3f235784b163329b"
+    },
+    {
+      "path": "scenarios.json",
+      "bytes": 5552,
+      "sha256": "8708c44666a6077890721b7fe15d00f891bf67c3c9327b38384cc1eab78e4b94"
+    }
+  ]
+}

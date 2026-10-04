@@ -1,0 +1,174 @@
+[
+  {
+    "scenario_id": "generation-timeout",
+    "kind": "anomaly",
+    "title": "上海生成超时增多",
+    "selection": {
+      "location_id": "shanghai",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-03"
+    },
+    "rule": {
+      "metric": "generation_failure_rate",
+      "operator": ">=",
+      "threshold": 0.25,
+      "minimum_denominator": 30
+    },
+    "suspected_cause": "排队拥堵或生成服务响应异常，尚未确认根因。",
+    "suggested_action": "查看超时任务与重试记录，对照服务耗时和排队情况。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "slow-generation",
+    "kind": "anomaly",
+    "title": "杭州成功任务耗时偏高",
+    "selection": {
+      "location_id": "hangzhou",
+      "start_date": "2026-10-03",
+      "end_date": "2026-10-03"
+    },
+    "rule": {
+      "metric": "average_success_duration_seconds",
+      "operator": ">=",
+      "threshold": 35,
+      "minimum_denominator": 10
+    },
+    "suspected_cause": "可能涉及排队、内部重试或生成链路变慢。",
+    "suggested_action": "分别检查排队与执行耗时，不直接将总耗时归因于模型。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "low-scan-conversion",
+    "kind": "anomaly",
+    "title": "北京结果领取转化偏低",
+    "selection": {
+      "location_id": "beijing",
+      "start_date": "2026-10-01",
+      "end_date": "2026-10-03"
+    },
+    "rule": {
+      "metric": "scan_conversion_rate",
+      "operator": "<",
+      "threshold": 0.15,
+      "minimum_denominator": 30
+    },
+    "suspected_cause": "可能与领取引导、二维码可见性或体验意愿有关。",
+    "suggested_action": "检查可领取结果展示与扫码引导，结合现场反馈判断原因。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "moderation-blocks",
+    "kind": "anomaly",
+    "title": "成都内容拦截比例升高",
+    "selection": {
+      "location_id": "chengdu",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-03"
+    },
+    "rule": {
+      "metric": "moderation_block_rate",
+      "operator": ">=",
+      "threshold": 0.2,
+      "minimum_denominator": 20
+    },
+    "suspected_cause": "审核分类集中出现风险提示，需进一步复核。",
+    "suggested_action": "查看风险分类与提示词规则；不能仅为提高通过率而放松审核。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "moderation-backlog",
+    "kind": "anomaly",
+    "title": "杭州存在待审核积压",
+    "selection": {
+      "location_id": "hangzhou",
+      "start_date": "2026-10-04",
+      "end_date": "2026-10-04"
+    },
+    "rule": {
+      "metric": "moderation_pending_count",
+      "operator": ">=",
+      "threshold": 3,
+      "minimum_denominator": 0
+    },
+    "suspected_cause": "可能存在审核处理延迟，生成成功不代表结果已经可领取。",
+    "suggested_action": "检查待审核队列及等待时间，安排复核或排查审核服务。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "device-offline",
+    "kind": "anomaly",
+    "title": "成都02号设备心跳超时",
+    "selection": {
+      "location_id": "chengdu",
+      "device_id": "chengdu-02",
+      "scope": "snapshot"
+    },
+    "rule": {
+      "metric": "device_status",
+      "equals": "offline"
+    },
+    "suspected_cause": "未收到近期心跳，无法直接确认是网络、供电还是程序问题。",
+    "suggested_action": "联系现场检查网络、供电及应用进程，记录恢复情况。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "device-unknown",
+    "kind": "boundary",
+    "title": "北京02号设备状态未知",
+    "selection": {
+      "location_id": "beijing",
+      "device_id": "beijing-02",
+      "scope": "snapshot"
+    },
+    "rule": {
+      "metric": "device_status",
+      "equals": "unknown"
+    },
+    "suspected_cause": "快照中缺少心跳记录，不能直接判为离线。",
+    "suggested_action": "检查设备登记与心跳采集；体验数据和心跳可能来自不同链路。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "empty-location-day",
+    "kind": "boundary",
+    "title": "成都9月5日无体验数据",
+    "selection": {
+      "location_id": "chengdu",
+      "start_date": "2026-09-05",
+      "end_date": "2026-09-05"
+    },
+    "rule": {
+      "metric": "session_count",
+      "equals": 0
+    },
+    "suspected_cause": "仅能确认没有体验记录，不能由此判定设备故障。",
+    "suggested_action": "展示空状态，比例和平均时长显示“—”；设备快照仍可查看。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  },
+  {
+    "scenario_id": "small-sample",
+    "kind": "boundary",
+    "title": "北京9月5日样本不足",
+    "selection": {
+      "location_id": "beijing",
+      "start_date": "2026-09-05",
+      "end_date": "2026-09-05"
+    },
+    "rule": {
+      "metric": "session_count",
+      "equals": 3
+    },
+    "suspected_cause": "样本数量不足以支持稳定的比例比较。",
+    "suggested_action": "展示样本量并提示谨慎解读，不触发基于30个样本的比例告警。",
+    "root_cause_confirmed": false,
+    "data_origin": "synthetic"
+  }
+]

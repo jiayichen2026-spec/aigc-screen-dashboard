@@ -10,7 +10,10 @@
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "data:generate": "node scripts/generate-mock-data.mjs",
+    "data:validate": "node scripts/validate-mock-data.mjs",
+    "test:data": "node --test tests/mock-data.test.mjs"
   },
   "dependencies": {
     "echarts": "6.1.0",

@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "generator_version": "1.0.0",
+  "seed": 20261004,
+  "data_origin": "synthetic",
+  "timezone": "Asia/Shanghai",
+  "utc_offset": "+08:00",
+  "period": {
+    "start_date": "2026-09-05",
+    "end_date": "2026-10-04",
+    "day_count": 30
+  },
+  "snapshot_at": "2026-10-04T10:00:00.000Z",
+  "online_threshold_seconds": 300,
+  "default_range_days": 7,
+  "locations": [
+    {
+      "id": "shanghai",
+      "name": "上海 · 淮海路店"
+    },
+    {
+      "id": "beijing",
+      "name": "北京 · 三里屯店"
+    },
+    {
+      "id": "hangzhou",
+      "name": "杭州 · 湖滨店"
+    },
+    {
+      "id": "chengdu",
+      "name": "成都 · 太古里店"
+    }
+  ],
+  "date_attribution": "session_started_at",
+  "status_as_of": "snapshot_at",
+  "device_filter_scope": "location_only",
+  "visitor_identity_scope": "synthetic_cross_location",
+  "generation_granularity": "one_logical_task_per_session_with_internal_attempts"
+}
