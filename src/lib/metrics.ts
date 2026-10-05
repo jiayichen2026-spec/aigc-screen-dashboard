@@ -5,6 +5,8 @@ import type {
   MetricDataset,
   Session,
 } from "../types/mock-data.ts";
+import { calculateFunnel } from "./funnel.ts";
+import type { FunnelStage } from "./funnel.ts";
 
 const DAY_MS = 86_400_000;
 const SHANGHAI_OFFSET_MS = 8 * 3_600_000;
@@ -115,6 +117,7 @@ export interface DashboardCalculation {
     incompleteDates: string[];
   };
   metrics: Metrics | null;
+  funnel: FunnelStage[] | null;
   daily: {
     date: string;
     coverage: "complete" | "partial" | "unavailable";
@@ -516,6 +519,7 @@ export function createMetricEngine(input: MetricDataset) {
           .map((day) => day.date),
       },
       metrics: outside ? null : aggregate(selectedSessions, jobBySession),
+      funnel: outside ? null : calculateFunnel(selectedSessions, jobBySession),
       daily,
       locations: sites.map((site) => ({
         ...site,

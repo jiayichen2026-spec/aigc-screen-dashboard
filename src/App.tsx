@@ -7,6 +7,7 @@ import { formatCount, formatPercent, formatSeconds } from "./lib/metric-format";
 import DeviceList, { formatSnapshot } from "./components/DeviceList";
 import ExceptionCenter, { ExceptionDialog } from "./components/ExceptionCenter";
 import PriorityFocus from "./components/PriorityFocus";
+import ConversionFunnel from "./components/ConversionFunnel";
 import { useExceptions } from "./hooks/useExceptions";
 import type { ExceptionItem } from "./lib/exceptions";
 
@@ -459,6 +460,10 @@ export default function App() {
                 </div>
               </section>
             </div>
+            <ConversionFunnel
+              result={result}
+              unavailableText={unavailableText}
+            />
           </section>
           <div className="health-grid">
             <section id="moderation" className="panel">
