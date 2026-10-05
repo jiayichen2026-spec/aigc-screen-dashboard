@@ -176,7 +176,7 @@ p {
 }
 .sidebar-bottom {
   margin-top: auto;
-  padding: 18px 13px 0;
+  padding: 14px 13px 0;
   flex-shrink: 0;
 }
 .small-pill {
@@ -185,10 +185,15 @@ p {
   color: #acd4b9;
 }
 .sidebar-bottom p {
-  font-size: 14px;
-  color: #b4c9bc;
-  line-height: 1.9;
-  margin-top: 12px;
+  font-size: 12px;
+  color: #95b3a4;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+.sidebar-bottom .small-pill {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #95b3a4;
 }
 .sidebar-version {
   border-top: 1px solid #3a574b;
