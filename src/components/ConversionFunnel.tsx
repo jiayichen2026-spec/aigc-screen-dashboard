@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { DashboardCalculation } from "../lib/metrics";
 import { formatCount, formatPercent } from "../lib/metric-format";
 import { formatSnapshot } from "./DeviceList";
+import Explanation from "./Explanation";
 
 const suggestions = {
   started: "结合现场记录检查体验入口与引导，不能仅凭次数确认体验意愿。",
@@ -26,16 +27,26 @@ export default function ConversionFunnel({
       <div className="panel-heading">
         <div>
           <h2 id="funnel-title">完整转化漏斗</h2>
-          <p>从开始体验到扫码领取，核对每一步尚未继续的体验</p>
+          <p>按体验 ID 计次 · 转化率分母为上一阶段</p>
         </div>
-        <span className="neutral-badge">按体验 ID 去重</span>
       </div>
-      <p className="funnel-note">
-        每阶段为体验次数，同一体验最多计一次，重试和重复扫码不重复计数。
-        按北京时间的体验开始日及点位筛选，后续阶段属于前序同一批体验。
-        {result &&
-          `状态统一观察至 ${formatSnapshot(result.coverage.observedThrough)}（北京时间）。`}
-      </p>
+      <Explanation label="查看漏斗指标口径">
+        <p>
+          每阶段为体验次数，同一体验最多计一次，重试和重复扫码不重复计数。
+          按北京时间的体验开始日及点位筛选，后续阶段属于前序同一批体验。
+          {result &&
+            `状态统一观察至 ${formatSnapshot(result.coverage.observedThrough)}（北京时间）。`}
+        </p>
+        <p>
+          色条按“开始体验”次数等比例展示；下方转化率的分母均为上一阶段次数。
+        </p>
+        <p>
+          漏斗“生成成功”以全部已提交体验为分母，包含排队和处理中；“审核通过”以全部生成成功体验为分母，包含待审核。与上方排除未结束状态的成功率、审核通过率口径不同。扫码领取仅代表存在扫码事件，不代表下载或购买完成。
+        </p>
+        <p>
+          从开始体验到扫码领取，核对每一步尚未继续的体验；差额分类表示尚未到达本阶段的状态。
+        </p>
+      </Explanation>
       {!result ? (
         <p className="funnel-state" role="status">
           {unavailableText}
@@ -61,9 +72,6 @@ export default function ConversionFunnel({
               所选范围包含未结束日，未完成状态仍可能变化；差额不等于最终失败或流失。
             </p>
           )}
-          <p className="funnel-scale">
-            色条按“开始体验”次数等比例展示；下方转化率的分母均为上一阶段次数。
-          </p>
           <ol className="funnel-stages">
             {stages.map((stage, index) => (
               <li className="funnel-stage" key={stage.id} data-stage={stage.id}>
@@ -115,9 +123,7 @@ export default function ConversionFunnel({
                     <p className="funnel-entry-note">起始阶段，无差额分类。</p>
                   ) : (
                     <>
-                      <p className="funnel-entry-note">
-                        尚未到达本阶段的状态：
-                      </p>
+                      <p className="funnel-entry-note">差额状态：</p>
                       <ul>
                         {stage.breakdown.map((group) => (
                           <li key={group.label}>
@@ -136,9 +142,6 @@ export default function ConversionFunnel({
               </li>
             ))}
           </ol>
-          <p className="funnel-note">
-            漏斗“生成成功”以全部已提交体验为分母，包含排队和处理中；“审核通过”以全部生成成功体验为分母，包含待审核。与上方排除未结束状态的成功率、审核通过率口径不同。扫码领取仅代表存在扫码事件，不代表下载或购买完成。
-          </p>
         </>
       )}
     </section>

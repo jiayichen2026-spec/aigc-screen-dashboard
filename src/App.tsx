@@ -8,6 +8,7 @@ import DeviceList, { formatSnapshot } from "./components/DeviceList";
 import ExceptionCenter, { ExceptionDialog } from "./components/ExceptionCenter";
 import PriorityFocus from "./components/PriorityFocus";
 import ConversionFunnel from "./components/ConversionFunnel";
+import Explanation from "./components/Explanation";
 import { useExceptions } from "./hooks/useExceptions";
 import type { ExceptionItem } from "./lib/exceptions";
 
@@ -207,23 +208,27 @@ export default function App() {
                     ? `模拟数据已接入 · 截至 ${formatSnapshot(data.metadata.snapshot_at)}（北京时间）`
                     : unavailableText}
                 </strong>
-                <p>
-                  {resource.status === "error"
-                    ? `${resource.message}。未使用0代替读取失败的数据。`
-                    : data
-                      ? "所有点位与用户均为虚构。最近7天／30天以数据快照为准，快照当日仅统计至上述截止时刻。"
+                {data ? (
+                  <Explanation label="查看模拟数据说明">
+                    <p>
+                      可复现模拟数据：所有点位与用户均为虚构。最近7天／30天以数据快照为准，快照当日仅统计至上述截止时刻。
+                    </p>
+                  </Explanation>
+                ) : (
+                  <p>
+                    {resource.status === "error"
+                      ? `${resource.message}。未使用0代替读取失败的数据。`
                       : "正在加载体验、生成任务和设备快照，请稍候。"}
-                </p>
+                  </p>
+                )}
               </div>
               {resource.status === "error" ? (
                 <button className="button secondary" onClick={retry}>
                   重新加载
                 </button>
-              ) : (
-                <span className="notice-tag">
-                  {data ? "可复现模拟数据" : "加载中"}
-                </span>
-              )}
+              ) : !data ? (
+                <span className="notice-tag">加载中</span>
+              ) : null}
             </div>
             <div className="filter-bar">
               <div className="filters">

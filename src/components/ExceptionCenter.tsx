@@ -13,6 +13,7 @@ import {
 import type { useExceptions } from "../hooks/useExceptions";
 import { formatSnapshot } from "./DeviceList";
 import { formatCount, formatSeconds } from "../lib/metric-format";
+import Explanation from "./Explanation";
 
 export default function ExceptionCenter({
   exceptions,
@@ -50,9 +51,14 @@ export default function ExceptionCenter({
               : "正在读取案例"}
         </span>
       </div>
-      <p className="exception-scope">
-        业务按预设案例窗口与所选日期的交集复算；设备只随点位筛选。阈值为演示配置，所有根因均待确认。
-      </p>
+      <Explanation label="查看异常规则说明">
+        <p>
+          业务按预设案例窗口与所选日期的交集复算；设备只随点位筛选。阈值为演示配置，所有根因均待确认。
+        </p>
+        <p>
+          同一体验可能关联多个关注项，影响人数不可直接相加。数据提示不等于已确认业务故障。
+        </p>
+      </Explanation>
       {resource.status === "error" ? (
         <div className="exception-error" role="alert">
           <p>{resource.message}。概览指标仍可使用。</p>
@@ -167,7 +173,7 @@ export default function ExceptionCenter({
             </table>
           </div>
           <p className="panel-footnote">
-            同一体验可能关联多个关注项，影响人数不可直接相加。数据提示不等于已确认业务故障；窄屏可横向滑动表格。
+            根因待确认；窄屏可横向滑动表格查看完整信息。
           </p>
         </>
       )}

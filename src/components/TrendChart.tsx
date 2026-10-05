@@ -37,7 +37,7 @@ export default function TrendChart({
     instance.current?.setOption(
       {
         animation: false,
-        grid: { left: 48, right: 54, top: 30, bottom: 36 },
+        grid: { left: 56, right: 60, top: 30, bottom: 36 },
         tooltip: { trigger: "axis", confine: true, renderMode: "richText" },
         xAxis: {
           type: "category",
@@ -47,7 +47,7 @@ export default function TrendChart({
           ),
           axisLine: { lineStyle: { color: "#b1c3b8" } },
           axisTick: { show: false },
-          axisLabel: { fontSize: 10, color: "#698171", hideOverlap: true },
+          axisLabel: { fontSize: 14, color: "#52665b", hideOverlap: true },
         },
         yAxis: [
           {
@@ -55,8 +55,8 @@ export default function TrendChart({
             name: "人",
             min: 0,
             minInterval: 1,
-            nameTextStyle: { color: "#698171" },
-            axisLabel: { fontSize: 10, color: "#698171" },
+            nameTextStyle: { color: "#52665b", fontSize: 14 },
+            axisLabel: { fontSize: 14, color: "#52665b" },
             splitLine: { lineStyle: { color: "#edf1ee", type: "dashed" } },
           },
           {
@@ -64,8 +64,8 @@ export default function TrendChart({
             name: "%",
             min: 0,
             max: 100,
-            nameTextStyle: { color: "#ad8455" },
-            axisLabel: { fontSize: 10, color: "#ad8455" },
+            nameTextStyle: { color: "#805325", fontSize: 14 },
+            axisLabel: { fontSize: 14, color: "#805325" },
             splitLine: { show: false },
           },
         ],

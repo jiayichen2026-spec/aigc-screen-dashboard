@@ -4,6 +4,7 @@ import { metricLabels, observedText, ruleText } from "../lib/exception-display";
 import { focusScope, priorityItems } from "../lib/priority-focus";
 import { formatSeconds } from "../lib/metric-format";
 import { formatSnapshot } from "./DeviceList";
+import Explanation from "./Explanation";
 
 export default function PriorityFocus({
   exceptions,
@@ -33,7 +34,7 @@ export default function PriorityFocus({
         <span className="neutral-badge">最多 3 项 · 根因待核查</span>
       </div>
       <p className="focus-explanation">
-        设备离线优先；业务按窗口结束日期从近到远，同日按关联记录数从多到少，最后按案例编号排序。仅展示已触发的异常，排序不代表严重程度。
+        设备离线优先；业务随日期与点位更新，设备使用独立快照。
       </p>
       {!result ? (
         <p className="focus-state" role="status">
@@ -104,11 +105,16 @@ export default function PriorityFocus({
               ))}
             </ul>
           )}
-          <p className="focus-explanation focus-footnote">
-            业务按案例窗口与所选日期交集复算；设备仅随点位筛选。时间均为北京时间。阈值为演示配置，数据提示与完整证据见异常中心。
-          </p>
         </>
       )}
+      <Explanation label="查看重点关注排序与口径">
+        <p>
+          设备离线优先；业务按窗口结束日期从近到远，同日按关联记录数从多到少，最后按案例编号排序。仅展示已触发的异常，排序不代表严重程度。
+        </p>
+        <p>
+          业务按案例窗口与所选日期交集复算；设备仅随点位筛选。时间均为北京时间。阈值为演示配置，数据提示与完整证据见异常中心。
+        </p>
+      </Explanation>
     </section>
   );
 }
