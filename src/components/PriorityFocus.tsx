@@ -25,6 +25,8 @@ export default function PriorityFocus({
     result && (!result.metrics || result.metrics.sessions === 0);
   return (
     <section
+      id="focus"
+      tabIndex={-1}
       className="panel priority-focus"
       aria-labelledby="focus-title"
       aria-busy={!result || resource.status === "loading"}

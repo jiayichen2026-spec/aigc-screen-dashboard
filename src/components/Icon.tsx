@@ -6,9 +6,13 @@ type IconName =
   | "alert"
   | "arrow"
   | "info"
-  | "location";
+  | "location"
+  | "funnel"
+  | "search";
 
 const paths: Record<IconName, string> = {
+  funnel: "M3 4h18l-7 8v7l-4 2v-9z",
+  search: "M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
   overview: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   activity: "M2 12h5l3-8 4 16 3-8h5",
   shield: "M12 3l8 3v6c0 5-8 9-8 9S4 17 4 12V6z M8 12l3 3 5-6",

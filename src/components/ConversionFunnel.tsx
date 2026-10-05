@@ -23,7 +23,12 @@ export default function ConversionFunnel({
   const stages = result?.funnel;
   const started = stages?.[0].count ?? 0;
   return (
-    <section className="panel conversion-funnel" aria-labelledby="funnel-title">
+    <section
+      id="funnel"
+      tabIndex={-1}
+      className="panel conversion-funnel"
+      aria-labelledby="funnel-title"
+    >
       <div className="panel-heading">
         <div>
           <h2 id="funnel-title">完整转化漏斗</h2>

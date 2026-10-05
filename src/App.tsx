@@ -11,13 +11,9 @@ import ConversionFunnel from "./components/ConversionFunnel";
 import Explanation from "./components/Explanation";
 import { useExceptions } from "./hooks/useExceptions";
 import type { ExceptionItem } from "./lib/exceptions";
-
-const navigation = [
-  { id: "overview", label: "运营概览", icon: "overview" },
-  { id: "moderation", label: "内容审核", icon: "shield" },
-  { id: "devices", label: "设备状态", icon: "screen" },
-  { id: "exceptions", label: "异常中心", icon: "alert" },
-] as const;
+import { useSectionNavigation } from "./hooks/useSectionNavigation";
+import { SectionLinks, MobileDirectory } from "./components/SectionNavigation";
+import { navigationItems } from "./lib/section-navigation";
 
 export default function App() {
   const { resource, retry } = useDashboardData();
@@ -31,7 +27,6 @@ export default function App() {
   const [filterError, setFilterError] = useState("");
   const [location, setLocation] = useState("all");
   const [period, setPeriod] = useState("7");
-  const [activeSection, setActiveSection] = useState("overview");
   const definitions = useRef<HTMLDialogElement>(null);
   const siteOptions = data
     ? [{ id: "all", name: "全部点位" }, ...data.metadata.locations]
@@ -49,6 +44,10 @@ export default function App() {
   const exceptions = useExceptions(
     data?.dataset ?? null,
     result?.filter ?? null,
+  );
+  const sectionNavigation = useSectionNavigation(
+    resource.status === "error" ||
+      (resource.status === "ready" && exceptions.resource.status !== "loading"),
   );
   const [selectedExceptionId, setSelectedExceptionId] = useState<string | null>(
     null,
@@ -106,8 +105,7 @@ export default function App() {
       setDraftEnd(item.filter.endDate);
     }
     setFilterError("");
-    setActiveSection("overview");
-    document.getElementById("overview")?.scrollIntoView();
+    sectionNavigation.navigate("overview");
   };
 
   return (
@@ -116,7 +114,11 @@ export default function App() {
         跳到主要内容
       </a>
       <aside className="sidebar">
-        <a className="brand" href="#overview">
+        <a
+          className="brand"
+          href="#overview"
+          onClick={(event) => sectionNavigation.onNavigate(event, "overview")}
+        >
           <span className="brand-mark">
             <Icon name="activity" />
           </span>
@@ -129,33 +131,17 @@ export default function App() {
           <span>
             品牌活动工作台<small>演示空间</small>
           </span>
-          <span className="workspace-chevron">⌄</span>
         </div>
-        <p className="nav-label">工作空间</p>
         <nav aria-label="主要导航">
-          {navigation.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              className={
-                activeSection === item.id ? "nav-link active" : "nav-link"
-              }
-              aria-current={activeSection === item.id ? "location" : undefined}
-              onClick={() => setActiveSection(item.id)}
-            >
-              <Icon name={item.icon} />
-              {item.label}
-              {item.id === "overview" && <span className="nav-dot" />}
-            </a>
-          ))}
+          <SectionLinks
+            prefix="desktop"
+            activeId={sectionNavigation.activeId}
+            onNavigate={sectionNavigation.onNavigate}
+          />
         </nav>
         <div className="sidebar-bottom">
           <span className="small-pill">DEMO WORKSPACE</span>
-          <p>
-            看见每一次互动
-            <br />
-            连接体验与运营决策
-          </p>
+          <p>本页定位 · 保留筛选</p>
           <div className="sidebar-version">
             数据演示 <span>v0.3</span>
           </div>
@@ -165,7 +151,14 @@ export default function App() {
       <div className="main-shell">
         <header className="topbar">
           <div className="breadcrumb">
-            工作空间 <span>/</span> <strong>运营概览</strong>
+            运营看板 <span>/</span>{" "}
+            <strong>
+              {
+                navigationItems.find(
+                  (item) => item.id === sectionNavigation.activeId,
+                )?.label
+              }
+            </strong>
           </div>
           <div className="topbar-right">
             <span className="demo-badge">
@@ -177,8 +170,19 @@ export default function App() {
             </span>
           </div>
         </header>
+        <MobileDirectory
+          activeId={sectionNavigation.activeId}
+          onNavigate={sectionNavigation.onNavigate}
+          open={sectionNavigation.mobileOpen}
+          setOpen={sectionNavigation.setMobileOpen}
+        />
         <main id="main" aria-busy={resource.status === "loading"}>
-          <section id="overview" className="overview">
+          <section
+            id="overview"
+            className="overview"
+            tabIndex={-1}
+            aria-label="概览与筛选"
+          >
             <div className="page-heading">
               <div>
                 <p className="eyebrow">OPERATIONS OVERVIEW</p>
@@ -405,7 +409,13 @@ export default function App() {
                 <span>未结束任务不计入成功率分母</span>
               </p>
             )}
-            <div className="analytics-grid">
+            <div
+              id="performance"
+              className="analytics-grid"
+              tabIndex={-1}
+              role="region"
+              aria-label="趋势与点位"
+            >
               <section className="panel trend-panel">
                 <div className="panel-heading">
                   <div>
@@ -471,7 +481,7 @@ export default function App() {
             />
           </section>
           <div className="health-grid">
-            <section id="moderation" className="panel">
+            <section id="moderation" className="panel" tabIndex={-1}>
               <div className="panel-heading">
                 <div>
                   <h2>内容审核</h2>
@@ -508,7 +518,7 @@ export default function App() {
                 个结果；待审核不进入分母
               </p>
             </section>
-            <section id="devices" className="panel">
+            <section id="devices" className="panel" tabIndex={-1}>
               <div className="panel-heading">
                 <div>
                   <h2>设备状态</h2>
@@ -556,7 +566,7 @@ export default function App() {
               onSelect={setSelectedExceptionId}
             />
           ) : (
-            <section id="exceptions" className="panel">
+            <section id="exceptions" className="panel" tabIndex={-1}>
               <div className="panel-heading">
                 <h2>异常中心</h2>
               </div>

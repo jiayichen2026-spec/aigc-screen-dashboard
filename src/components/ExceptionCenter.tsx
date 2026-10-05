@@ -35,6 +35,7 @@ export default function ExceptionCenter({
   return (
     <section
       id="exceptions"
+      tabIndex={-1}
       className="panel exceptions"
       aria-busy={resource.status === "loading"}
     >
